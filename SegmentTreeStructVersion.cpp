@@ -51,7 +51,7 @@ struct sgTree {
         int b = update(rgt, m+1, r, s, t, v);
         return sg[n] = com(a,b);
     }
-    int query(int n, int l, int r,int s, int t, int notrangevalue) {
+    int query(int n, int l, int r,int s, int t, const int notrangevalue) {
         if(r<s || t<l) return notrangevalue;
         if(s<=l && r<=t) {
 //        cout <<l <<" "<<r<<" "<<n<<" "<<endl;
