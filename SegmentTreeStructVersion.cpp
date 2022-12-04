@@ -63,3 +63,11 @@ struct sgTree {
         return sg[n] = com(query(lft, l, m, s, t, notrangevalue), query(rgt, m+1, r, s, t, notrangevalue));
     }
 };
+int main(){
+  sgTree MiN(sg1, lazy1, N+5, (1e9)+5, [](int a, int b) {
+        return  min(a, b);
+    });
+    sgTree MaX(sg2, lazy2, N, -1, [](int a, int b) {
+        return max(a, b);
+    });
+}
