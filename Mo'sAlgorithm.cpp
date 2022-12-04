@@ -60,3 +60,76 @@ void solve() {
   //  for(int i=1; i<=m; i++) cout << a[i]<<"\n";
 
 }
+/*********************************************************************************************************************************************************************/
+
+/*
+  link: https://codeforces.com/problemset/problem/617/E
+*/
+
+int arr[maxn], ind[maxn], l[maxn], r[maxn];
+long ans[maxn];
+long mp[(1<<20)+1];
+int n, m, k, block;
+void solve() {
+    cin >> n >> m >> k;
+    for(int i=1; i<=n; i++) {
+        cin >> arr[i];
+        arr[i]^=arr[i-1];
+    }
+    while(1) {
+        block++;
+        if(block*block>=n) break;
+    }
+    for(int i=1; i<=m; i++) {
+        cin >> l[i] >> r[i];
+        ind[i] = i;
+    }
+
+    sort(ind+1, ind+1+m, [](int a, int b) {
+        if(l[a]/block==l[b]/block) return r[a]<r[b];
+        return l[a]/block < l[b]/block;
+    });
+    int lft = -1, rgt = -1;
+    long res = 0;
+
+    for(int j=1; j<=m; j++) {
+        int i= ind[j];
+        while(rgt+1<=r[i]) {
+            rgt++;
+//            if(mp.find(arr[rgt]^k)!=mp.end())
+            {
+                res+=mp[arr[rgt]^k];
+            }
+            mp[arr[rgt]]++;
+        }
+        while(lft>=l[i]-1) {
+
+//            if(mp.find(arr[lft]^k)!=mp.end())
+            {
+                res+=mp[arr[lft]^k];
+            }
+            mp[arr[lft]]++;
+            lft--;
+        }
+        while(rgt>r[i]) {
+
+            mp[arr[rgt]]--;
+//            if(mp.find(arr[rgt]^k)!=mp.end())
+            {
+                res-=mp[arr[rgt]^k];
+            }
+            rgt--;
+
+        }
+        while(lft+1<l[i]-1) {
+            lft++;
+            mp[arr[lft]]--;
+//            if(mp.find(arr[lft]^k)!=mp.end())
+            {
+                res-=mp[arr[lft]^k];
+            }
+        }
+        ans[i] =  res;
+    }
+    for(int i=1;  i<=m; i++) cout << ans[i]<<"\n";
+}
