@@ -133,3 +133,77 @@ void solve() {
     }
     for(int i=1;  i<=m; i++) cout << ans[i]<<"\n";
 }
+
+
+/*********************************************************************************************************************************************************************/
+
+/*
+link: https://codeforces.com/problemset/problem/220/B
+*/
+int arr[maxn], ind[maxn], l[maxn], r[maxn];
+int ans[maxn];
+int mp[maxn];
+vector<int> v;
+int n, m, k, block;
+void solve() {
+    cin >> n >> m ;
+    for(int i=1; i<=n; i++) {
+        cin >> arr[i];
+        v.push_back(arr[i]);
+    }
+    sort(v.begin(), v.end());
+    for(int i=1; i<=n; i++) {
+        arr[i] = lower_bound(v.begin(), v.end(), arr[i]) - v.begin();
+    }
+    while(1) {
+        block++;
+        if(block*block>=n) break;
+    }
+    for(int i=1; i<=m; i++) {
+        cin >> l[i] >> r[i];
+        ind[i] = i;
+    }
+
+    sort(ind+1, ind+1+m, [](int a, int b) {
+        if(l[a]/block==l[b]/block) return r[a]<r[b];
+        return l[a]/block < l[b]/block;
+    });
+    int lft = 0, rgt = 0;
+    int res = 0, help;
+
+    for(int j=1; j<=m; j++) {
+        int i= ind[j];
+        while(rgt+1<=r[i]) {
+            rgt++;
+            help =  ++mp[arr[rgt]];
+            if(help==v[arr[rgt]]) res++;
+            if(help-1==v[arr[rgt]]) res--;
+
+        }
+        while(lft>=l[i]) {
+
+            help = ++mp[arr[lft]];
+            if(help==v[arr[lft]]) res++;
+            if(help-1==v[arr[lft]]) res--;
+            lft--;
+
+        }
+        while(rgt>r[i]) {
+
+            help = --mp[arr[rgt]];
+            if(help==v[arr[rgt]]) res++;
+            if(help+1==v[arr[rgt]]) res--;
+
+            rgt--;
+
+        }
+        while(lft+1<l[i]) {
+            lft++;
+            help = --mp[arr[lft]];
+            if(help==v[arr[lft]]) res++;
+            if(help+1==v[arr[lft]]) res--;
+        }
+        ans[i] =  res;
+    }
+    for(int i=1;  i<=m; i++) cout << ans[i]<<"\n";
+}
