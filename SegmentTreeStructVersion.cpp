@@ -60,7 +60,8 @@ struct sgTree {
         int m = (l+r)/2;
         int lft = n*2+1, rgt=n*2+2;
         if(lazy[n]!=-1) propagate(n, lft=n*2+1, rgt=n*2+2);
-        return sg[n] = com(query(lft, l, m, s, t, notrangevalue), query(rgt, m+1, r, s, t, notrangevalue));
+        sg[n] = com(sg[lft], sg[rgt]);
+        return com(query(lft, l, m, s, t, notrangevalue), query(rgt, m+1, r, s, t, notrangevalue));
     }
 };
 int main(){
