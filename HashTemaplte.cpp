@@ -1,4 +1,75 @@
 
+//My own
+//Tstruct Hash {
+    int mod, base;
+    vector<int> v;
+    vector<int> vbase;
+    vector<int> invbase;
+    int add(int a, int b) {
+        long long c = 0LL+a+b;
+        if(c>=mod) c-=mod;
+        if(c<0) c+=mod;
+        return int(c);
+    }
+    int sub(int a, int b) {
+        return add(a, -b);
+    }
+    int mul(int a, int b) {
+        return int((1LL*a*b)%(1LL*mod));
+    }
+    int bigmod(int b, int p) {
+        int res = 1;
+        while(p) {
+            if(p%2) res = mul(res, b);
+            b = mul(b, b);
+            p/=2;
+        }
+        return res;
+    }
+    Hash(int b, int mod, string s = "") {
+        this->base = b;
+        this->mod = mod;
+        if(s.length()) set(s);
+    }
+    int set(string s) {
+        v.clear();
+        vbase.clear();
+        int sum = 0;
+        int b = 1;
+        for(int i= 0; i<s.length(); i++) {
+            int r = s[i] - 'a'+1;
+            r = mul(r, b);
+            sum = add(sum, r);
+            v.push_back(sum);
+            vbase.push_back(b);
+            b = mul(b, base);
+
+        }
+        invbase.push_back(bigmod(vbase.back(),mod-2));
+        for(int i=v.size()-2; i>=0; i--) invbase.push_back(mul(invbase.back(), base));
+        reverse(invbase.begin(), invbase.end());
+        return sum;
+    }
+    int FullHash() {
+        if(v.empty()) return 0;
+        else return v.back();
+    }
+    int RangeHash(int i, int j) {
+        int r = v[j];
+        if(i>0) r = sub(r, v[i-1]);
+
+        return mul(r, invbase[i]);
+    }
+};
+
+
+
+//*****************************************************************************************************************************************************************//
+//*****************************************************************************************************************************************************************//
+
+
+
+// Tkers from other 
 #include <bits/stdc++.h>
 
 
@@ -140,4 +211,4 @@ int main()
     generate_hs();
     vertex_hash[0] = char_hash(s[0]);
 
-}
+}   
