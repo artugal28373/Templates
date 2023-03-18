@@ -36,7 +36,7 @@ int cal_dist(int a, int b, int lca) {
 
     return dist[a]+dist[b] - 2*dist[lca];
 }
-init(int n){
+void init(int n){
   memset(sp, 0, sizeof sp);
   timer=0;
   for(int i=0; i<=n; i++){
