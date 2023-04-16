@@ -29,7 +29,7 @@ int findcentroid(int node, int par, int val)
     }
     return node;
 }
-void centroid(int node, int par)
+void centroidDecomposition(int node, int par)
 {
     findsize(node, -1);
     int c = findcentroid(node, -1, subsz[node]);
@@ -51,7 +51,6 @@ int main()
         v[a].push_back(b);
         v[b].push_back(a);
     }
-    findsize(1, -1);
-
-    cout << findcentroid(1, -1, subsz[1]);
+    
+  centroidDecomposition(1, 0);
 }
