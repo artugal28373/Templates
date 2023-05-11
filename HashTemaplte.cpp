@@ -1,6 +1,7 @@
 
 //My own
-//Tstruct Hash {
+//T
+struct Hash {
     int mod, base;
     vector<int> v;
     vector<int> vbase;
