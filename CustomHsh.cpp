@@ -20,3 +20,7 @@ struct chash {
 };
 
 gp_hash_table<int, int, chash> mp[200005];
+
+/*
+https://codeforces.com/blog/entry/62393?fbclid=IwAR0jc-v18zfgraeAenjLpzyxiYnbKR18BU7msMnAPRVSovFq99HPO-kY3bI
+*/
