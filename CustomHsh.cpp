@@ -41,4 +41,15 @@ struct CustomHash {
         }
         return hash;
     }
+}; 
+//****// 
+// https://ianyepan.github.io/posts/cpp-custom-hash/
+// p is a pair<string, int>
+hash<string>{}(p.first) ^ hash<int>{}(p.second); // simple and effective
+//****
+struct PairHash {
+  template <typename T1, typename T2>
+  auto operator()(const pair<T1, T2> &p) const -> size_t {
+    return hash<T1>{}(p.first) ^ hash<T2>{}(p.second);
+  }
 };
