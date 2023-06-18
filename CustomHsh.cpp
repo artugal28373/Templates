@@ -23,4 +23,22 @@ gp_hash_table<int, int, chash> mp[200005];
 
 /*
 https://codeforces.com/blog/entry/62393?fbclid=IwAR0jc-v18zfgraeAenjLpzyxiYnbKR18BU7msMnAPRVSovFq99HPO-kY3bI
-*/
+*/ 
+
+
+struct CustomHash {
+    uint64_t operator()(const vector<int>& a) const
+    {
+        uint64_t x;
+        uint64_t hash = a.size();
+        for (int i = 0; i < 26; ++i)
+        {
+            x = hash + a[i];
+            x += 0x9e3779b97f4a7c15;
+            x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9;
+            x = (x ^ (x >> 27)) * 0x94d049bb133111eb;
+            hash ^= x ^ (x >> 31);
+        }
+        return hash;
+    }
+};
