@@ -52,4 +52,5 @@ struct PairHash {
   auto operator()(const pair<T1, T2> &p) const -> size_t {
     return hash<T1>{}(p.first) ^ hash<T2>{}(p.second);
   }
-};
+}; 
+// https://usaco.guide/gold/hashmaps?lang=cpp
