@@ -195,3 +195,85 @@ q
 ~
 `
 */
+//////**************************************************************************************************///////////////
+const int N = 30;
+
+int b[N][N], h[N][N], res[N][N], x[N][N], y[N][N], fnl[N][N];
+int  initia[N][N], cons[N][N];
+//int power[30][N][N], sum[30][N][N];
+void identity(int b[N][N], int n) {
+    for(int i=0; i<n; i++) {
+        for(int j=0; j<n; j++) {
+            b[i][j] = (i^j?0:1);
+        }
+    }
+    return;
+}
+void copy(int dest[N][N], int source[N][N], int n, int m) {
+    for(int i=0; i<n; i++) {
+        for(int j=0; j<m; j++) {
+            dest[i][j] = source[i][j];
+        }
+    }
+    return;
+}
+void add(int a[N][N], int b[N][N], int res[N][N], int n, int m) {
+    for(int i=0; i<n; i++) {
+        for(int j=0; j<m; j++) {
+            res[i][j] = (a[i][j] + b[i][j])%mod;
+        }
+    }
+    return ;
+}
+void sub(int a[N][N], int b[N][N], int res[N][N], int n, int m) {
+    for(int i=0; i<n; i++) {
+        for(int j=0; j<m; j++) {
+            res[i][j] = (a[i][j] - b[i][j])%mod;
+            res[i][j] = (res[i][j] + mod)%mod;
+        }
+    }
+    return ;
+}
+void mul(int a[N][N], int b[N][N], int res[N][N], int n, int m, int nn) {
+    for(int i=0; i<n; i++) {
+        for(int j=0; j<nn; j++) {
+            res[i][j] = 0;
+            for(int k=0; k<m; k++) {
+                res[i][j] = (res[i][j]+a[i][k]*b[k][j])%mod;
+            }
+        }
+    }
+    return;
+}
+void bigmod(int b[N][N], int pw, int res[N][N], int n) {
+    int cop[N][N], bs[N][N];
+    copy(bs, b, n, n);
+    identity(res, n);
+    while(pw) {
+        if(pw&1) {
+            mul(bs, res, cop, n, n, n);
+            copy(res, cop, n, n);
+        }
+        mul(bs, bs, cop, n, n, n);
+        copy(bs, cop, n, n);
+        pw>>=1;
+    }
+
+}
+//void bigmod(int b[N][N], int pw, int res[N][N], int n) {
+//
+//    identity(res, n);
+//    for(int i=0; i<30; i++) {
+//        if((pw>>i)&1) {
+//            mul(res, power[i], h, n);
+//            copy(res, h,n);
+//        }
+//    }
+//    return;
+//}
+void print(int b[N][N], int n, int m) {
+    for(int i=0; i<n; i++) {
+        for(int j=0; j<m; j++) cout << b[i][j]<<" * ";
+        cout <<endl;
+    }
+}
