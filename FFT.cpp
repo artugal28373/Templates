@@ -67,7 +67,7 @@ bool multiply(vector<int>&a,vector<int>&b, vector<int> &ret) {
     fft(fa,true);
     ret.resize(n);
     for(int i=0; i<n; i++)
-        ret[i]=((int)round(fa[i].x));
+        ret[i]=((int)round(fa[i].x+0.5));
     return 1;
 }
 
