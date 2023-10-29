@@ -54,4 +54,42 @@ void solve() {
             update(l, r);
         }
     }
+} 
+int bound(int l){
+     return block * (l/block) + block - 1;
 }
+void frac(int l, int r, int vl){
+     for(int i=block*(l/block); i<block*(l/block)+block && i<n; i++){
+         ds[i/block][psum[i]]--;
+         psum[i]+=info[i/block];
+         ds[i/block][psum[i]]++;
+     }  
+    info[l/block] = 0;
+    for(int i=l; i<=r; i++){
+       ds[i/block][psum[i]]--;
+       psum[i]+=vl;
+       ds[i/block][psum[i]]++;
+   }
+} 
+void upd(int l, int r, int vl){
+     frac(l, min(bound(l), r), vl);
+     l = min(bound(l), r)+1;
+     if(l<=r){
+        frac(block*r/block, r, vl);
+        r = r/block-1;
+        if(l<=r){
+            for(int i=l/block; i<=r/block; i++){
+                info[i]+=vl;
+            }
+        }
+     }
+}
+
+int get(){
+   int res = 0;
+   for(int i=0; i<= n/block; i++){ 
+       if(info[i]<=0) res+=ds[i][-info[i]];
+   } 
+   return res;
+}
+
