@@ -1,225 +1,170 @@
 #include<bits/stdc++.h>
 using namespace std;
-const int mxn = (2e4)+5;
-template<int Sixe=mxn>
-struct segmentTree {
-    int segment[4*Sixe+4];
-//    int lxy[4*Sixe+4];
-//    int mxi[4*Sixe+4];
-//    bool mut[4*Sixe+4];
-//    void mutt() {
-//        mut[0] = 1;
-//        mxi[0] = lxy[0] = 0;
-//        segment[0] = Sixe;
-//    }
-//    void p(int u, int l, int r) {
-//        int lft = u*2+1, rgt = u*2+2;
-//        if(mut[u]) {
-//            mxi[lft] = 0, mxi[rgt] = 0;
-//            lxy[lft] = lxy[rgt] = 0;
-//            segment[lft] = ((l+r)/2 - l+1);
-//            segment[rgt] = (r - (l+r)/2);
-//        }
-//        mxi[lft]+=lxy[u];
-//        mxi[rgt]+=lxy[u];
-//        lxy[lft]+=lxy[u];
-//        lxy[rgt]+=lxy[u];
-//        mut[lft] = mut[u];
-//        mut[rgt] = mut[u];
-//        mut[u] = 0;
-//        lxy[u] = 0;
-//        return;
-//    }
-    void updt(int u, int s, int t, int v, bool pointupdt=0, int l= 0, int r = Sixe-1) {
-        if(t<l || r<s) return;
-        if(s<=l && r<=t) {
-            if(pointupdt) {
-                segment[u]  = v;
-            } else {
-                segment[u] = v;
-            }
-            return;
-        }
-//        p(u, l,r);
-        int m = (l+r)/2;
-        updt(u*2+1,s, t, v, pointupdt, l, m);
-        updt(u*2+2,s, t, v, pointupdt, m+1, r);
-        int lft = u*2+1;
-        int rgt = lft+1;
-        segment[u] =  max(segment[lft], segment[rgt]);
-    }
-    int _find(int u, int s, int t, int l = 0, int r = Sixe-1) {
-        if(s<=l && r<=t) return segment[u];
-        if(t<l || r<s) return -1;
-//        p(u, l, r);
-        int m = (l+r)/2;
-        auto c = _find(u*2+1, s, t, l, m);
-        auto d = _find(u*2+2, s, t, m+1, r);
-        return max(c, d);
-    }
-};
+// a
+#define int long long
+const int mxn = 3e5+2;
+long long segmentTree[4*mxn];
+long long lxy[4*mxn];
+const long long mod = (119<<23)+1;
+// 0 based
 vector<int> g[mxn];
-template<int mx>
-struct HLD {
-
-    int timer;
-    int hevy[mx+1], prent[mx+1], depth[mx+1], hed[mx], pos[mx];
-    segmentTree<mx> segT;
-    HLD() {
-        fill(hevy, hevy+mx, -1);
-        fill(prent, prent+mx, -1);
-        fill(hed, hed+mx, -1);
-        timer =0;
-
+int parent[mxn], chain_head[mxn], sx[mxn];
+int start[mxn], finish[mxn], big[mxn], height[mxn];
+int timer, numberOfNode;
+#define Left u*2+1
+#define Right Left+1
+void prop(int u, int l, int r) {
+    if(lxy[u]==-1) return;
+    lxy[Left]=lxy[u];
+    lxy[Right]=lxy[u];
+    int m = (l+r)/2;
+    segmentTree[Left]=((m-l+1)*lxy[u])%mod;
+    segmentTree[Right]=((r-m)*lxy[u])%mod;
+    lxy[u] = -1;
+}
+void upd(int u, int l, int r,  int s, int t, long long vl) {
+    if(s<=l && r<=t) {
+        lxy[u] = vl;
+        segmentTree[u] = (vl*(r-l+1))%mod;
+        return;
     }
-    int dfs(int u, vector<int> g[]) {
-        int sx = 1, mx_v_sx = 0;
-        for(int &v: g[u]) {
-            if(v==prent[u]) continue;
-            prent[v] = u, depth[v] = depth[u]+1;
-            int v_sx = dfs(v, g);
-            sx+=v_sx;
-            if(v_sx>mx_v_sx) {
-                mx_v_sx = v_sx;
-                hevy[u] =v;
+    if(r<s || t<l) return;
+    int m = (l+r)/2;
+    prop(u, l, r);
+    upd(Left,l, m, s, t, vl);
+    upd(Right,m+1, r, s, t, vl);
+    segmentTree[u] = (segmentTree[Left]+segmentTree[Right])%mod;
+}
+long long _segmentreeF(int u, int l, int r, int s, int t) {
+    if(s<=l && r<=t) return segmentTree[u];
+    if(r<s || t<l) return 0ll;
+    int m = (l+r)/2;
+    prop(u, l, r);
+    return (_segmentreeF(Left, l, m, s, t)+_segmentreeF(Right, m+1, r, s, t))%mod;
+}
+#undef Right
+#undef Left
+void constructor(int n) {
+    for(int i=0; i<=n; i++) {
+        g[i].clear();
+        big[i] = -1;
+        height[i] = 0;
+    }
+    for(int i=0; i<=4*n; i++) segmentTree[i] = 0, lxy[i] = -1;
+    timer=0;
+    numberOfNode = n;
+}
+void destructor(int n) {
+    for(int i=0; i<=n; i++) {
+        g[i].clear();
+    }
+}
+void dfs0(int u, int p) {
+    sx[u]=1;
+    for(int &x: g[u]) {
+        if(x^p) {
+            dfs0(x, u);
+            sx[u]+=sx[x];
+            if(big[u]==-1) big[u] = x;
+            if(sx[x]>sx[big[u]]) big[u] = x;
+        }
+    }
+}
+void decompose(int u, int p, int chainHead,  int lvl) {
+    parent[u] = p;
+    chain_head[u] = chainHead;
+    height[u] = lvl;
+    start[u] = timer++;
+    if(~big[u]) {
+        decompose(big[u], u, chainHead, lvl+1);
+    }
+    for(int &x: g[u]) {
+        if(x^big[u]) {
+            if(x^p) {
+                decompose(x, u, x, lvl+1);
             }
-
-        }
-        return sx;
-    }
-    void decompose(int u, int h, vector<int> g[]) {
-        hed[u] = h;
-        pos[u] = ++timer;
-        if(hevy[u]>-1)
-            decompose(hevy[u], h, g);
-        for(int&v:g[u]) {
-            if(v==prent[u] || v==hevy[u]) continue;
-            decompose(v, v, g);
         }
     }
-    int up(int a, int b) {
-//       for range update
-//        int res = 0;
-//        for (; hed[a] != hed[b]; b = prent[hed[b]]) {
-//            if (depth[hed[a]] > depth[hed[b]])
-//                swap(a, b);
-//            segT.updt(0, pos[hed[b]], pos[b], 1);
-//
-//        }
-//        if (depth[a] > depth[b])
-//            swap(a, b);
-//        segT.updt(0, pos[a], pos[b], 1);
+    finish[u] = timer;
+}
 
-//      point update
-        segT.updt(0, pos[a], pos[a], b);
-        return 1;
-    }
-    int _find(int a, int b) {
-        int res = 0;
-        for (; hed[a] != hed[b]; b = prent[hed[b]]) {
-            if (depth[hed[a]] > depth[hed[b]])
-                swap(a, b);
-
-            res = max(res, segT._find(0, pos[hed[b]], pos[b]));
-
+int lca(int u, int v) {
+    while(chain_head[u]^chain_head[v]) {
+        if(height[chain_head[u]] > height[chain_head[v]]) {
+            swap(u, v);
         }
-        if (depth[a] > depth[b])
-            swap(a, b);
-        res = max(res, segT._find(0, pos[a], pos[b]));
-
-        return res;
+        v = chain_head[v];
+        v = parent[v];
     }
-
-};
-
-// LCP's code
-int start[mxn], finish[mxn], dist[mxn];
-int subtreesize[mxn];
-int timer =0;
-int sp[20][mxn];
-void build(int n, int p, int d) {
-    subtreesize[n] = 1;
-    start[n]= ++timer;
-    dist[n] = d;
-    sp[0][n] = p;
-    for(int i=1; i<20; i++) {
-        sp[i][n] =  sp[i-1][sp[i-1][n]];
-    }
-    for(int &x: g[n]) {
-        if(x!=p) {
-            build(x, n, d+1);
-            subtreesize[n]+=subtreesize[x];
+    if(height[u]>height[v]) swap(u, v);
+    return u;
+}
+long long _HLDF(int u, int v) {
+    long long sum = 0;
+    while(chain_head[u]^chain_head[v]) {
+        if(height[chain_head[u]] > height[chain_head[v]]) {
+            swap(u, v);
         }
+        sum= (sum+_segmentreeF(0, 0, numberOfNode,start[chain_head[v]], start[v]))%mod;
+        v = chain_head[v];
+        v = parent[v];
     }
-    finish[n] = ++timer;
+    if(height[u]>height[v]) swap(u, v);
+    sum=(sum+_segmentreeF(0, 0, numberOfNode, start[u], start[v]))%mod;
+    return sum;
 }
-bool is_AanOfB(int a, int b) {
-    if(!a) return 1;
-    return (start[a]<=start[b] && finish[b]<=finish[a]);
-}
-int uery(int a, int b) {
-    if(is_AanOfB(a, b)) return a;
-    if(is_AanOfB(b, a)) return b;
-    for(int i=19; i>=0; i--) {
-        if(!is_AanOfB(sp[i][a], b)) a = sp[i][a];
+void _HLDU(int u, int v, long long vl) {
+    while(chain_head[u]^chain_head[v]) {
+        if(height[chain_head[u]] > height[chain_head[v]]) {
+            swap(u, v);
+        }
+        upd(0, 0, numberOfNode,start[chain_head[v]], start[v], vl);
+        v = chain_head[v];
+        v = parent[v];
     }
-    return sp[0][a];
-
-}
-int cal_dist(int a, int b, int lca) {
-
-    return dist[a]+dist[b] - 2*dist[lca];
+    if(height[u]>height[v]) swap(u, v);
+    upd(0, 0, numberOfNode, start[u], start[v], vl);
 }
 
-
-
-int brr[mxn];
-int main() {
+int32_t main() {
     ios_base :: sync_with_stdio(0);
     cin.tie(0);
-    int t=1;
+    int t;
     cin >> t;
-    for(int i=1; i<=t; i++) {
-        int n;
-        cin >> n;
-        for(int i=1; i<=2*n; i++) g[i].clear();
-        for(int i=1; i< n; i++) {
-            int u, v;
-            int w;
-            cin >> u >> v >> w;
-            brr[i+n] = w;
-            g[u].push_back(i+n);
-            g[v].push_back(i+n);
-            g[i+n].push_back(u);
-            g[i+n].push_back(v);
+    for(int tc=0; tc<t; tc++) {
+        string b, c;
+        cin >> b >> c;
+        int nb = b.length();
+        int nc = c.length();
+        b = "#"+b+"#"+c;
+        vector<int> kmp(b.length()+10);
+        int node = 0;
+        kmp[1] = node;
+        for(int i=2; i<b.length(); i++) {
+            while(node && b[node+1]!=b[i]) node = kmp[node];
+            if(b[node+1]==b[i]) node++;
+            kmp[i] = node;
         }
-        HLD<mxn> hld;
-        build(1, 0, 0);
-        hld.dfs(1, g);
-        hld.decompose(1, 1, g);
-        for(int i=n+1; i<2*n; i++){
-            // orginal position value
-            hld.up(i, brr[i]);
+        constructor(nb);
+        for(int i=1; i<=nb; i++) {
+            g[kmp[i]].push_back(i);
         }
-        string s;
-        while(cin >> s) {
-            if(s=="DONE") break;
-            int c, d;
-            cin >> c >> d;
-            if(s=="CHANGE") {
-                hld.up(c+n, d);
-            } else {
-                // lowest common ancestor
-                int lcp = uery(c, d);
-                  // orginal node's value
-                  cout << max(hld._find(c,lcp), hld._find(d, lcp))<<"\n";
-            }
+        dfs0(0, 0);
+        decompose(0, 0, 0, 0);
+        for(int i=b.length()-1; nc; i--, nc--) {
+            long long sum = (segmentTree[0]+1)%mod;
+            _HLDU(0, kmp[i], sum);
+            _HLDU(0, 0, 0);
         }
+        cout << segmentTree[0]<<"\n";
+        destructor(nb);
     }
+
+
 }
 
 
-
+// a
 
 
 
