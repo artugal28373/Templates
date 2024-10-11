@@ -1,3 +1,35 @@
+// O(nlgn^2)
+int dp[mxn], g[mxn];
+// both are 1-based
+// dp[i] = sun of dp[j]*g[i-j] where j>=1 && j<n
+void mul(int i, int j, int l, int r){
+     vector<int> a(j-i+1), b(r-l+1);
+     for(int s=0; s<(j-i+1); s++){
+         a[s] = dp[s+i];
+         b[s] = g[s+l];
+     }
+     vector<int> c = FFT::multiply(a, b);
+     for(int s=0; s<c.size(); s++){
+         dp[i+l+s]+=c[s];
+     }
+}
+
+void dc(int l, int r, int s, int t){
+
+    if(l==r){
+        mul(l , r, s, t);
+        return;
+    }
+    int m1 = (l+r)/2;
+    int m2 = (s+t)/2;
+    dc(l, m1, s, m2);
+    mul(l, m1, m2+1, t);
+    dc(m1+1, r, s, m2);
+    mul(m1+1, r, m2+1, t);
+}
+
+
+//// FFT code
 #include<bits/stdc++.h>
 using namespace std;
 #define int long long
@@ -339,32 +371,4 @@ int main() {
 
 ////////////////////
 
-// O(nlgn^2)
-int dp[mxn], g[mxn];
-// both are 1-based
-// dp[i] = sun of dp[j]*g[i-j] where j>=1 && j<n
-void mul(int i, int j, int l, int r){
-     vector<int> a(j-i+1), b(r-l+1);
-     for(int s=0; s<(j-i+1); s++){
-         a[s] = dp[s+i];
-         b[s] = g[s+l];
-     }
-     vector<int> c = FFT::multiply(a, b);
-     for(int s=0; s<c.size(); s++){
-         dp[i+l+s]+=c[s];
-     }
-}
 
-void dc(int l, int r, int s, int t){
-
-    if(l==r){
-        mul(l , r, s, t);
-        return;
-    }
-    int m1 = (l+r)/2;
-    int m2 = (s+t)/2;
-    dc(l, m1, s, m2);
-    mul(l, m1, m2+1, t);
-    dc(m1+1, r, s, m2);
-    mul(m1+1, r, m2+1, t);
-}
