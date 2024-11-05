@@ -1,3 +1,4 @@
+// https://codeforces.com/contest/754/submission/23612728
 const ld PI = acos(-1.0);
  
 bool bit(int mask, int i) {
