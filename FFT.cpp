@@ -27,7 +27,136 @@ void dc(int l, int r, int s, int t){
     dc(m1+1, r, s, m2);
     mul(m1+1, r, m2+1, t);
 }
+// Modifiedby me
+namespace FFT {
+#define PI acos(-1.0)
+struct base {
+    /** x = real, y = imagine **/
+    double x,y;
+    base(double a=0,double b=0):x(a),y(b) {}
+    base operator+(base c) {
+        return base(x+c.x,y+c.y);
+    }
+    base operator-(base c) {
+        return base(x-c.x,y-c.y);
+    }
+    base operator*(base c) {
+        return base(x*c.x-y*c.y,x*c.y+y*c.x);
+    }
+    base operator/(double d) {
+        return base(x/d,y/d);
+    }
+    void operator*=(base c) {
+        double a=x*c.x-y*c.y,b=x*c.y+y*c.x;
+        x=a,y=b;
+    }
+    void operator/=(double d) {
+        x/=d,y/=d;
+    }
+};
+void fft(vector<base>&a,bool inv) {
+    int n=a.size();
+    for(int i=1,j=0; i<n; i++) {
+        int bit=n>>1;
+        for(; bit&j; bit>>=1) j^=bit;
+        j^=bit;
+        if(i<j)swap(a[i],a[j]);
+    }
+    for(int len=2; len<=n; len<<=1) {
+        double ang=2*PI/len*(inv?-1:1);
+        base wlen(cos(ang),sin(ang));
+        for(int i=0; i<n; i+=len) {
+            base w(1);
+            for(int j=0; j<len/2; j++) {
+                base u=a[i+j],v=a[i+j+len/2]*w;
+                a[i+j]=u+v;
+                a[i+j+len/2]=u-v;
+                w*=wlen;
+            }
+        }
+    }
+    if(inv)for(auto &x:a)x/=n;
+}
+void fft2D(vector<vector<base>>&a, bool inv) {
+    for(auto &rows: a) {
+        fft(rows, inv);
+    }
+    int col = a[0].size();
+    int row = a.size();
+    vector<base> temp(row);
+    for(int j=0; j<col; j++) {
+        for(int i=0; i<row; i++) {
+            temp[i] = a[i][j];
+        }
+        fft(temp, inv);
+        for(int i=0; i<row; i++) {
+            a[i][j] = temp[i];
+        }
+    }
+}
+vector<int> multiply(vector<int>&a,vector<int>&b) {
+    /**a^0+a^1+a^2+a^3+... format**/
+    int sz=a.size()+b.size();
+    int n=1;
+    while(n<sz)n<<=1;
+    vector<base>fa(a.begin(),a.end());
+    vector<base>fb(b.begin(),b.end());
+    fa.resize(n);
+    fb.resize(n);
+    fft(fa,false);
+    fft(fb,false);
+    for(int i=0; i<n; i++)fa[i]*=fb[i];
+    fft(fa,true);
+    vector<int> ret;
+    sz = a.size()+b.size()-1;
+    ret.resize(sz, 0);
+    for(int i=0; i<sz; i++)
+        ret[i]=((int)round(fa[i].x));
+    return ret;
+}
+vector<vector<int>> multiply(vector<vector<int>> &a, vector<vector<int>> &b) {
+    vector<vector<base>>fa(a.size()), fb(b.size());
+    for(int i=0; i<a.size(); i++) {
+        fa[i] = vector<base>(a[i].begin(), a[i].end());
+    }
+    for(int i=0; i<a.size(); i++) {
+        fb[i] = vector<base>(b[i].begin(), b[i].end());
+    }
+    int nrow = 1, ncol = 1;
+    int sz;
+    sz = a.size()+b.size();
+    while(nrow<sz) nrow<<=1;
+    sz = a[0].size()+b[0].size();
+    fa.resize(nrow);
+    fb.resize(nrow);
+    while(ncol<sz) ncol<<=1;
+    for(int i=0; i<nrow; i++) {
+        fa[i].resize(ncol);
+        fb[i].resize(ncol);
+    }
+    fft2D(fa, false);
+    fft2D(fb, false);
+    for(int i=0; i<nrow; i++) {
+        for(int j=0; j<ncol; j++) {
+            fa[i][j] *= fb[i][j];
+        }
+    }
+    fft2D(fa, true);
+    nrow = a.size()+b.size()-1, ncol = a[0].size()+b[0].size()-1;
+    vector<vector<int>> ret(nrow, vector<int>(ncol, 0));
+    for(int i=0; i<nrow; i++) {
+        for(int j=0; j<ncol; j++) {
+            ret[i][j] = ( (int)round(fa[i][j].x) );
+        }
+    }
+    return ret;
+}
+};
 
+
+
+
+//////////////////
 
 /**
 /** araf vai.. slight modificattion in naming**/
