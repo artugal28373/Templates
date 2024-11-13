@@ -29,6 +29,212 @@ void dc(int l, int r, int s, int t){
 }
 
 
+/**
+/** araf vai.. slight modificattion in naming**/
+/** problem: codeforces.com/contest/632/problem/E **/
+
+#include<bits/stdc++.h>
+using namespace std;
+namespace FFT {
+#define PI acos(-1.0)
+struct base {
+    /** x = real, y = imagine **/
+    double x,y;
+    base(double a=0,double b=0):x(a),y(b) {}
+    base operator+(base c) {
+        return base(x+c.x,y+c.y);
+    }
+    base operator-(base c) {
+        return base(x-c.x,y-c.y);
+    }
+    base operator*(base c) {
+        return base(x*c.x-y*c.y,x*c.y+y*c.x);
+    }
+    base operator/(double d) {
+        return base(x/d,y/d);
+    }
+    void operator*=(base c) {
+        double a=x*c.x-y*c.y,b=x*c.y+y*c.x;
+        x=a,y=b;
+    }
+    void operator/=(double d) {
+        x/=d,y/=d;
+    }
+};
+void fft(vector<base>&a,bool inv) {
+    int n=a.size();
+    for(int i=1,j=0; i<n; i++) {
+        int bit=n>>1;
+        for(; bit&j; bit>>=1) j^=bit;
+        j^=bit;
+        if(i<j)swap(a[i],a[j]);
+    }
+    for(int len=2; len<=n; len<<=1) {
+        double ang=2*PI/len*(inv?-1:1);
+        base wlen(cos(ang),sin(ang));
+        for(int i=0; i<n; i+=len) {
+            base w(1);
+            for(int j=0; j<len/2; j++) {
+                base u=a[i+j],v=a[i+j+len/2]*w;
+                a[i+j]=u+v;
+                a[i+j+len/2]=u-v;
+                w*=wlen;
+            }
+        }
+    }
+    if(inv)for(auto &x:a)x/=n;
+}
+bool multiply(vector<int>&a,vector<int>&b, vector<int> &ret) {
+    /**a^0+a^1+a^2+a^3+... format**/
+    int sz=a.size()+b.size();
+    int n=1;
+    while(n<sz)n<<=1;
+    vector<base>fa(a.begin(),a.end());
+    vector<base>fb(b.begin(),b.end());
+    fa.resize(n);
+    fb.resize(n);
+    fft(fa,false);
+    fft(fb,false);
+    for(int i=0; i<n; i++)fa[i]*=fb[i];
+    fft(fa,true);
+    ret.resize(n);
+    for(int i=0; i<n; i++)
+        ret[i]=((int)round(fa[i].x));
+    return 1;
+}
+
+};
+int main() {
+    int i,j,k,n,m;
+    cin>>n>>k;
+    vector<int> v(1000+5,0);
+    for(int i=0, u; i<n && cin >> u; i++) v[u]=1;
+    vector<int> res = {1};
+    while(k) {
+        if(k&1) FFT::multiply(res, v, res);
+        FFT::multiply(v, v, v);
+        k/=2;
+    }
+    for(int i=0; i<res.size(); i++) {
+        if(res[i]) cout << i <<" ";
+    }
+
+
+    return 0;
+}
+**/
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+/** 
+// youknowwho
+#include<bits/stdc++.h>
+using namespace std;
+//to store complex numbers
+#define ld long double
+#define PI acos(-1.0)
+#define vi vector<int>
+#define all(b) b.begin(), b.end()
+#define ll long long
+//inv=0 means Converting from coefficient form to point value form
+//inv=1 means Converting from point value  form to coefficient form i.e. inverse fft
+struct base {
+    typedef double T;
+    T re, im;
+    base() :re(0), im(0) {}
+    base(T re) :re(re), im(0) {}
+    base(T re, T im) :re(re), im(im) {}
+    base operator + (const base& o) const {
+        return base(re + o.re, im + o.im);
+    } base operator - (const base& o) const {
+        return base(re - o.re, im - o.im);
+    }
+    base operator * (const base& o) const {
+        return base(re * o.re - im * o.im, re * o.im + im * o.re);
+    } base operator / (const T o) const {
+        assert(0.0!=o);
+        return base(re/o,im/o);
+    } base operator * (ld k) const {
+        return base(re * k, im * k);
+    }
+    base conj() const {
+        return base(re, -im);
+    }
+};
+void fft(vector<base> &a,bool inv) {
+    int n=(int)a.size();
+    //rearranging the elements to the leaf nodes of the tree
+    for(int i=1,j=0; i<n; i++) {
+        int bit=n>>1;
+        for(; j>=bit; bit>>=1) j-=bit;
+        j+=bit;
+        if(i<j) swap(a[i],a[j]);
+    }
+    for(int len=2; len<=n; len*=2) {
+        ld ang=2*PI/len*(inv?-1:1);
+        base wlen(cos(ang),sin(ang));
+        //wlen=e^(2*PI*i/n)=cos(2*PI/n)+i*sin(2*PI/n)
+        //bcz e^(i*theta)=cos(theta)+i*sin(theta)
+        for(int i=0; i<n; i+=len) {
+            base w=1;
+            for(int j=0; j<len/2; j++) {
+                base even=a[i+j],odd=a[i+j+len/2];
+                a[i+j]=even+w*odd;
+                a[i+j+len/2]=even-w*odd;
+                w= w*wlen;
+            }
+        }
+    }
+    if(inv) for(int i=0; i<n; i++) a[i]=a[i]/n;
+}
+void multiply(vi& a,vi& b,vi& res) {
+    vector<base>fa(all(a)),fb(all(b));
+    int n=1;
+    int mx=max((ll)a.size(),(ll)b.size());
+    while(n<mx) n*=2;//making it power of 2
+    n*=2;//making 2*n size
+    fa.resize(n);
+    fb.resize(n);
+    //convolution
+    fft(fa,0);
+    fft(fb,0);
+    for(int i=0; i<n; i++) fa[i]=fa[i]*fb[i];
+    fft(fa,1);//inverse fft
+    res.resize(n);
+    for(int i=0; i<n; i++) res[i]=int(fa[i].re+0.5);
+    for(int i=0; i<n; i++) if(res[i]>1) res[i]=1;
+    while(res.size()>1&&res.back()==0) res.pop_back();
+    return;
+}
+
+void getpow(vi &v,int k,vi &res) {
+    res.push_back(1);
+    while(k>0) {
+        if(k&1) multiply(res,v,res);
+        multiply(v,v,v);
+        k>>=1;
+    }
+}
+int main() {
+    int i,j,k,n,m;
+    cin>>n>>k;
+    vi v(1000+5,0);
+    for(int i=0, u; i<n && cin >> u; i++) v[u]=1;
+    vi res = {1};
+    while(k) {
+        if(k&1) multiply(res, v, res);
+        multiply(v, v, v);
+        k/=2;
+    }
+    for(int i=0; i<res.size(); i++) {
+        if(res[i]) cout << i <<" ";
+    }
+
+
+    return 0;
+}
+**/
+
+////////////////////
+
 //// FFT code
 #include<bits/stdc++.h>
 using namespace std;
@@ -164,211 +370,5 @@ int32_t main() {
     return 0;
 }
  
-
-/**
-/** araf vai.. slight modificattion in naming**/
-/** problem: codeforces.com/contest/632/problem/E **/
-
-#include<bits/stdc++.h>
-using namespace std;
-namespace FFT {
-#define PI acos(-1.0)
-struct base {
-    /** x = real, y = imagine **/
-    double x,y;
-    base(double a=0,double b=0):x(a),y(b) {}
-    base operator+(base c) {
-        return base(x+c.x,y+c.y);
-    }
-    base operator-(base c) {
-        return base(x-c.x,y-c.y);
-    }
-    base operator*(base c) {
-        return base(x*c.x-y*c.y,x*c.y+y*c.x);
-    }
-    base operator/(double d) {
-        return base(x/d,y/d);
-    }
-    void operator*=(base c) {
-        double a=x*c.x-y*c.y,b=x*c.y+y*c.x;
-        x=a,y=b;
-    }
-    void operator/=(double d) {
-        x/=d,y/=d;
-    }
-};
-void fft(vector<base>&a,bool inv) {
-    int n=a.size();
-    for(int i=1,j=0; i<n; i++) {
-        int bit=n>>1;
-        for(; bit&j; bit>>=1) j^=bit;
-        j^=bit;
-        if(i<j)swap(a[i],a[j]);
-    }
-    for(int len=2; len<=n; len<<=1) {
-        double ang=2*PI/len*(inv?-1:1);
-        base wlen(cos(ang),sin(ang));
-        for(int i=0; i<n; i+=len) {
-            base w(1);
-            for(int j=0; j<len/2; j++) {
-                base u=a[i+j],v=a[i+j+len/2]*w;
-                a[i+j]=u+v;
-                a[i+j+len/2]=u-v;
-                w*=wlen;
-            }
-        }
-    }
-    if(inv)for(auto &x:a)x/=n;
-}
-bool multiply(vector<int>&a,vector<int>&b, vector<int> &ret) {
-    /**a^0+a^1+a^2+a^3+... format**/
-    int sz=a.size()+b.size();
-    int n=1;
-    while(n<sz)n<<=1;
-    vector<base>fa(a.begin(),a.end());
-    vector<base>fb(b.begin(),b.end());
-    fa.resize(n);
-    fb.resize(n);
-    fft(fa,false);
-    fft(fb,false);
-    for(int i=0; i<n; i++)fa[i]*=fb[i];
-    fft(fa,true);
-    ret.resize(n);
-    for(int i=0; i<n; i++)
-        ret[i]=((int)round(fa[i].x));
-    return 1;
-}
-
-}
-int main() {
-    int i,j,k,n,m;
-    cin>>n>>k;
-    vector<int> v(1000+5,0);
-    for(int i=0, u; i<n && cin >> u; i++) v[u]=1;
-    vector<int> res = {1};
-    while(k) {
-        if(k&1) FFT::multiply(res, v, res);
-        FFT::multiply(v, v, v);
-        k/=2;
-    }
-    for(int i=0; i<res.size(); i++) {
-        if(res[i]) cout << i <<" ";
-    }
-
-
-    return 0;
-}
-**/
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-/** 
-// youknowwho
-#include<bits/stdc++.h>
-using namespace std;
-//to store complex numbers
-#define ld long double
-#define PI acos(-1.0)
-#define vi vector<int>
-#define all(b) b.begin(), b.end()
-#define ll long long
-//inv=0 means Converting from coefficient form to point value form
-//inv=1 means Converting from point value  form to coefficient form i.e. inverse fft
-struct base {
-    typedef double T;
-    T re, im;
-    base() :re(0), im(0) {}
-    base(T re) :re(re), im(0) {}
-    base(T re, T im) :re(re), im(im) {}
-    base operator + (const base& o) const {
-        return base(re + o.re, im + o.im);
-    } base operator - (const base& o) const {
-        return base(re - o.re, im - o.im);
-    }
-    base operator * (const base& o) const {
-        return base(re * o.re - im * o.im, re * o.im + im * o.re);
-    } base operator / (const T o) const {
-        assert(0.0!=o);
-        return base(re/o,im/o);
-    } base operator * (ld k) const {
-        return base(re * k, im * k);
-    }
-    base conj() const {
-        return base(re, -im);
-    }
-};
-void fft(vector<base> &a,bool inv) {
-    int n=(int)a.size();
-    //rearranging the elements to the leaf nodes of the tree
-    for(int i=1,j=0; i<n; i++) {
-        int bit=n>>1;
-        for(; j>=bit; bit>>=1) j-=bit;
-        j+=bit;
-        if(i<j) swap(a[i],a[j]);
-    }
-    for(int len=2; len<=n; len*=2) {
-        ld ang=2*PI/len*(inv?-1:1);
-        base wlen(cos(ang),sin(ang));
-        //wlen=e^(2*PI*i/n)=cos(2*PI/n)+i*sin(2*PI/n)
-        //bcz e^(i*theta)=cos(theta)+i*sin(theta)
-        for(int i=0; i<n; i+=len) {
-            base w=1;
-            for(int j=0; j<len/2; j++) {
-                base even=a[i+j],odd=a[i+j+len/2];
-                a[i+j]=even+w*odd;
-                a[i+j+len/2]=even-w*odd;
-                w= w*wlen;
-            }
-        }
-    }
-    if(inv) for(int i=0; i<n; i++) a[i]=a[i]/n;
-}
-void multiply(vi& a,vi& b,vi& res) {
-    vector<base>fa(all(a)),fb(all(b));
-    int n=1;
-    int mx=max((ll)a.size(),(ll)b.size());
-    while(n<mx) n*=2;//making it power of 2
-    n*=2;//making 2*n size
-    fa.resize(n);
-    fb.resize(n);
-    //convolution
-    fft(fa,0);
-    fft(fb,0);
-    for(int i=0; i<n; i++) fa[i]=fa[i]*fb[i];
-    fft(fa,1);//inverse fft
-    res.resize(n);
-    for(int i=0; i<n; i++) res[i]=int(fa[i].re+0.5);
-    for(int i=0; i<n; i++) if(res[i]>1) res[i]=1;
-    while(res.size()>1&&res.back()==0) res.pop_back();
-    return;
-}
-
-void getpow(vi &v,int k,vi &res) {
-    res.push_back(1);
-    while(k>0) {
-        if(k&1) multiply(res,v,res);
-        multiply(v,v,v);
-        k>>=1;
-    }
-}
-int main() {
-    int i,j,k,n,m;
-    cin>>n>>k;
-    vi v(1000+5,0);
-    for(int i=0, u; i<n && cin >> u; i++) v[u]=1;
-    vi res = {1};
-    while(k) {
-        if(k&1) multiply(res, v, res);
-        multiply(v, v, v);
-        k/=2;
-    }
-    for(int i=0; i<res.size(); i++) {
-        if(res[i]) cout << i <<" ";
-    }
-
-
-    return 0;
-}
-**/
-
-////////////////////
 
 
