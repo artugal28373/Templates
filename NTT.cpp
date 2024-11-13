@@ -9,6 +9,7 @@ const int root_1 = 116744195;
 const int root_pw = (1 << 23);
 
 int generator (int mod) {
+    // (log2(mod)^6) iteration at most
     vector<int> fact;
     int phi = mod-1,  n = phi;
     for (int i=2; i*i<=n; ++i)
