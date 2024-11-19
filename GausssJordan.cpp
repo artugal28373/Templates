@@ -18,7 +18,7 @@ int bigmod(int b, int p, int mod) {
 
 // https://lightoj.com/problem/graph-coloring
 
-int gaussJordan(vector<vector<double>> &mat, vector<int> &ans) {
+int gaussJordan(vector<vector<double>> &mat, vector<double> &ans) {
     // mat contain all coef and last column contains right side value.
     const double eps = 1e-9;
     int n = mat.size();
@@ -120,59 +120,97 @@ int gaussJordan(vector<vector<int>> &mat, vector<int> &ans, const int mod, vecto
         }
         if(sum ^ mat[i][m]) return -1; /** no solution **/
     }
-
-    /**
-      keeping all free is equal to 0 we  get particular sol.
-      take any one free is equal to 1 and rest is equal to zero.
-      now x1 - 2*x2 = b0 then basis is for x2 = 2
-    **/
-
-    sol_basis = vector<vector<int>>(free_var, vector<int>(m, 0));
-    for(int i=0; i<m; i++) {
-        if(pos[i]!=-1) { // taking a variable that is not free
-            int inv = bigmod(mat[ pos[i] ][i], mod-2, mod);
-            for(int j=0, col=0; j<m; j++) {
-                if(pos[j]==-1) { // taking a variable that is free
-                    int b = (mat[ pos[i] ][j]*inv)%mod;
-                    b = mod-b;
-                    if(b==mod) b=0;
-                    sol_basis[col][i] = b;
-                    sol_basis[col][j] = 1;
-                    col++; // colth free variable
-                }
-            }
-        }
-    }
+//
+//    /**
+//      keeping all free is equal to 0 we  get particular sol.
+//      take any one free is equal to 1 and rest is equal to zero.
+//      now x1 - 2*x2 = b0 then basis is for x2 = 2
+//    **/
+//
+//    sol_basis = vector<vector<int>>(free_var, vector<int>(m, 0));
+//    for(int i=0; i<m; i++) {
+//        if(pos[i]!=-1) { // taking a variable that is not free
+//            int inv = bigmod(mat[ pos[i] ][i], mod-2, mod);
+//            for(int j=0, col=0; j<m; j++) {
+//                if(pos[j]==-1) { // taking a variable that is free
+//                    int b = (mat[ pos[i] ][j]*inv)%mod;
+//                    b = mod-b;
+//                    if(b==mod) b=0;
+//                    sol_basis[col][i] = b;
+//                    sol_basis[col][j] = 1;
+//                    col++; // colth free variable
+//                }
+//            }
+//        }
+//    }
     return free_var;// free variable number. 0 means unique sol. positive means infinite sol.
 }
 
 
-int32_t main() {
-    cin.tie(0) ->sync_with_stdio(0);
-    int t;
-    cin >> t;
-    int tc=0;
-    while(t--) {
-        int n, m, k;
-        cin >> n >> m >> k;
-        vector<vector<int>> mat(n, vector<int>(n+1, 0)), basis;
-        vector<int> ans;
-        for(int i=0; i<m; i++) {
-            int u, v;
-            cin >> u >> v;
-            u--, v--;
-            mat[u][v] = 1;
-            mat[v][u] = 1;
-        }
-        for(int i=0; i<n; i++) {
-            mat[i][i] = (k-1);
-        }
+int gaussJordanInvers(vector<vector<int>> &mat, vector<vector<int>> &imat, const int mod) {
+    int n = mat.size();
+    if(n != mat[0].size()) return 0;
+    imat = vector<vector<int>> (n, vector<int>(n, 0));
+    for(int i=0; i<n; i++) imat[i][i] = 1;
 
-        int free_var = gaussJordan(mat, ans,k,  basis);
-        cout << "Case " << ++tc << ": ";
-        if(free_var==-1) cout << "0\n";
-        else {
-            cout << bigmod(k, free_var, 1e9+7)<<"\n";
+    int det = 1;
+    for(int i=0; i<n; i++) {
+        int mx = i;
+        for(int j=i; j<n; j++) {
+            if(mat[mx][i] < mat[j][i]) mx = j;
         }
+        if(mat[mx][i] == 0) {
+            det = 0;
+            return 0;
+        }
+        if(mx!=i) det = (det==0?0:mod-det);
+        swap(mat[mx], mat[i]);
+        swap(imat[mx], imat[i]);
+        int inv = bigmod(mat[i][i], mod-2, mod);
+        for(int j=0; j<n; j++) {
+            mat[i][j] = (mat[i][j] * inv)%mod;
+            imat[i][j] = (imat[i][j]*inv)%mod;
+        }
+        for(int row =0; row<n; row++) {
+            if(i!=row && mat[row][i]) {
+                int v = mat[row][i];
+                for(int col = 0; col<n; col++) {
+                    mat[row][col] = (mat[row][col]+mod - (v*mat[i][col]%mod))%mod;
+                    imat[row][col] = (imat[row][col]+mod - (v*imat[i][col]%mod))%mod;
+                }
+            }
+        }
+    }
+    for(int i=0; i<n; i++) {
+        for(int j=0; j<n; j++) {
+            if(i^j) {
+                if(mat[i][j]) return 0;
+            } else {
+                if(!mat[i][j]) return 0;
+            }
+        }
+    }
+    return 1; // has inverse matrix other wise inverse matrix doesn't exist
+}
+
+
+int32_t main() {
+    int n, m;
+    cin >> n ;
+    vector<vector<int>> mat(n, vector<int>(n)), imat;
+    for(int i=0; i<n; i++) {
+        for(int j=0; j<n; j++) {
+            cin >> mat[i][j];
+        }
+    }
+    if(gaussJordanInvers(mat, imat, (119<<23)+1)) {
+        for(auto &row:imat) {
+            for(auto &col: row) {
+                cout << col << " ";
+            }
+            cout << "\n";
+        }
+    }else{
+      cout << -1 << "\n";
     }
 }
