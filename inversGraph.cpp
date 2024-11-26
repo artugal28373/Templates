@@ -1,6 +1,6 @@
 #include<bits/stdc++.h>
 using namespace std;
-
+// https://judge.yosupo.jp/problem/connected_components_of_complement_graph
 int32_t main() {
 
     int n;
