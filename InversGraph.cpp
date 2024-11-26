@@ -3,6 +3,7 @@ using namespace std;
 // https://judge.yosupo.jp/problem/connected_components_of_complement_graph
 // get TLE for above
 // choose random two nodes and if there are no forbidden and join them using some ds.
+// can choose one that has less number of forbidden edges; 
 int32_t main() {
 
     int n;
