@@ -1,12 +1,10 @@
-
-///////////////////////
 #include<bits/stdc++.h>
 using namespace std;
 const int mxn = 2e5+4;
 vector<int> g[mxn], bridgeTree[mxn];
 int componentID[mxn], icomponentID[mxn];
 int low[mxn], disc[mxn];
-int isBridge[mxn*10];
+int isBridge[mxn];
 struct oneEdge {
     int ed1, ed2;
     oneEdge(int e1=0, int e2=0): ed1(e1), ed2(e2) {}
@@ -43,7 +41,18 @@ void dfs1(int u, int edno, int c) {
         }
     }
 }
-
+int d[2][mxn];
+pair<int, int> dfs2(int u, int p, int w) {
+    pair<int, int> mx = {d[w][u], u};
+    for(int &x: bridgeTree[u]) {
+        int v = bedges[x].ed(u);
+        if(v!=p) {
+            d[w][v]=d[w][u]+1;
+            mx = max(dfs2(v, u, w), mx);
+        }
+    }
+    return mx;
+}
 int main() {
 //    freopen("input.txt", "r", stdin);
 //    freopen("output.txt", "w", stdout);
@@ -52,7 +61,6 @@ int main() {
     for(int i=0; i<m; i++) {
         int u, v;
         cin >> u >> v;
-        u++, v++;
         g[u].push_back(i);
         g[v].push_back(i);
         edges.push_back(oneEdge(u, v));
@@ -69,22 +77,25 @@ int main() {
             dfs1(i, -1, ++c);
         }
     }
-//    for(int i=0; i<m; i++) {
-//        if(isBridge[i]==1) {
-//            bridgeTree[ componentID[edges[i].ed1] ].push_back(bedges.size());
-//            bridgeTree[ componentID[edges[i].ed2] ].push_back(bedges.size());
-//            bedges.push_back(edges[i]);
-//        }
-//    }
-    vector<vector<int>> g(c+1);
-    for(int i=1; i<=n; i++) {
-        g[ componentID[i] ].push_back(i);
+    for(int i=0; i<m; i++) {
+        if(isBridge[i]==1) {
+            bridgeTree[ componentID[edges[i].ed1] ].push_back(bedges.size());
+            bridgeTree[ componentID[edges[i].ed2] ].push_back(bedges.size());
+            bedges.push_back(oneEdge(componentID[ edges[i].ed1 ], componentID[ edges[i].ed2 ]));
+        }
     }
-    cout << c<< "\n";
-    for(int i=1; i<=c; i++) {
-        cout << g[i].size() << " ";
-        for(int &x: g[i]) cout << x- 1 << " ";
-        cout << "\n";
+    int mx = 0, cx=1, cy=1;
+    for(int i=1; i<=c; i++){
+        if(d[0][i] == 0){
+            pair<int, int> a = dfs2(i, i, 0);
+            pair<int, int> b = dfs2(a.second, a.second, 1);
+            if(b.first+1>mx){
+                mx = b.first+1;
+                cy = a.second;
+                cx = b.second;
+            }
+        }
     }
+    cout << icomponentID[cx] << " " << icomponentID[cy];
 
 }
