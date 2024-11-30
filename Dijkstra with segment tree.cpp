@@ -1,4 +1,5 @@
 // https://codeforces.com/contest/786/problem/B
+// https://nafis277.github.io/Notes/shortest_path_optimization_with_segtree.pdf
 #include<bits/stdc++.h>
 using namespace std;
 #define int long long
