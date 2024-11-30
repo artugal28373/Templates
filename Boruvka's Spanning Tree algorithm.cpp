@@ -3,7 +3,7 @@
 //  join each forest with its neasrest forest
 // average iteration log(E) times
 // complexity O(Elog(E))
-
+// It takes more time than other spanning tree algorithms.
 #include<bits/stdc++.h>
 using namespace std;
 const int mxn = 2e5+5;
